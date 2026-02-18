@@ -84,16 +84,13 @@ static PetscErrorCode __mfem_mat_shell_apply_transpose(Mat,Vec,Vec);
 static PetscErrorCode __mfem_mat_shell_destroy(Mat);
 static PetscErrorCode __mfem_mat_shell_copy(Mat,Mat,MatStructure);
 #if PETSC_VERSION_LT(3,23,0)
-static PetscErrorCode __mfem_array_container_destroy(void*);
-static PetscErrorCode __mfem_matarray_container_destroy(void *);
+typedef void *PetscCtxRt;
 #elif PETSC_VERSION_LT(3,25,0)
-static PetscErrorCode __mfem_array_container_destroy(void**);
-static PetscErrorCode __mfem_matarray_container_destroy(void**);
-#else
+typedef void **PetscCtxRt;
+#endif
 static PetscErrorCode __mfem_array_container_destroy(PetscCtxRt);
 static PetscErrorCode __mfem_matarray_container_destroy(PetscCtxRt);
-#endif
-#if PETSC_VERSION_LT(3,25,0)
+#if PETSC_VERSION_LT(3,23,0)
 static PetscErrorCode __mfem_monitor_ctx_destroy(void**);
 #else
 static PetscErrorCode __mfem_monitor_ctx_destroy(PetscCtxRt);
@@ -5325,16 +5322,9 @@ static PetscErrorCode __mfem_pc_shell_destroy(PC pc)
    PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if PETSC_VERSION_LT(3,23,0)
-static PetscErrorCode __mfem_array_container_destroy(void *ptr)
-#elif PETSC_VERSION_LT(3,25,0)
-static PetscErrorCode __mfem_array_container_destroy(void **ptr)
-#else
 static PetscErrorCode __mfem_array_container_destroy(PetscCtxRt ptr)
-#endif
 {
    PetscErrorCode ierr;
-
    PetscFunctionBeginUser;
 #if PETSC_VERSION_LT(3,23,0)
    ierr = PetscFree(ptr); CHKERRQ(ierr);
@@ -5344,13 +5334,7 @@ static PetscErrorCode __mfem_array_container_destroy(PetscCtxRt ptr)
    PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if PETSC_VERSION_LT(3,23,0)
-static PetscErrorCode __mfem_matarray_container_destroy(void *ptr)
-#elif PETSC_VERSION_LT(3,25,0)
-static PetscErrorCode __mfem_matarray_container_destroy(void **ptr)
-#else
 static PetscErrorCode __mfem_matarray_container_destroy(PetscCtxRt ptr)
-#endif
 {
 #if PETSC_VERSION_LT(3,23,0)
    mfem::Array<Mat> *a = (mfem::Array<Mat>*)ptr;
@@ -5370,7 +5354,7 @@ static PetscErrorCode __mfem_matarray_container_destroy(PetscCtxRt ptr)
    PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if PETSC_VERSION_LT(3,25,0)
+#if PETSC_VERSION_LT(3,23,0)
 static PetscErrorCode __mfem_monitor_ctx_destroy(void **ctx)
 #else
 static PetscErrorCode __mfem_monitor_ctx_destroy(PetscCtxRt ctx)
