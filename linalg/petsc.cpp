@@ -41,6 +41,9 @@
 #if PETSC_VERSION_LT(3,23,0)
 #define PetscContainerSetCtxDestroy(A,B) PetscContainerSetUserDestroy(A,B)
 #endif
+#if PETSC_VERSION_LT(3,23,0)
+typedef PetscErrorCode (PetscCtxDestroyFn)(void**);
+#endif
 
 #include <fstream>
 #include <iomanip>
@@ -2479,11 +2482,6 @@ void PetscSolver::SetMaxIter(int max_iter)
 
 void PetscSolver::SetPrintLevel(int plev)
 {
-#if PETSC_VERSION_LT(3,25,0)
-   typedef PetscErrorCode (*myPetscFunc)(void**);
-#else
-   typedef PetscCtxDestroyFn *myPetscFunc;
-#endif
    PetscViewerAndFormat *vf = NULL;
    PetscViewer viewer = PETSC_VIEWER_STDOUT_(PetscObjectComm(obj));
 
@@ -2509,14 +2507,14 @@ void PetscSolver::SetPrintLevel(int plev)
 #else
          ierr = KSPMonitorSet(ksp,(myMonitor)KSPMonitorResidual,vf,
 #endif
-                              (myPetscFunc)PetscViewerAndFormatDestroy);
+                              (PetscCtxDestroyFn *)PetscViewerAndFormatDestroy);
          PCHKERRQ(ksp,ierr);
       }
       else if (plev > 1)
       {
          ierr = KSPSetComputeSingularValues(ksp,PETSC_TRUE); PCHKERRQ(ksp,ierr);
          ierr = KSPMonitorSet(ksp,(myMonitor)KSPMonitorSingularValue,vf,
-                              (myPetscFunc)PetscViewerAndFormatDestroy);
+                              (PetscCtxDestroyFn *)PetscViewerAndFormatDestroy);
          PCHKERRQ(ksp,ierr);
          if (plev > 2)
          {
@@ -2527,7 +2525,7 @@ void PetscSolver::SetPrintLevel(int plev)
 #else
             ierr = KSPMonitorSet(ksp,(myMonitor)KSPMonitorTrueResidual,vf,
 #endif
-                                 (myPetscFunc)PetscViewerAndFormatDestroy);
+                                 (PetscCtxDestroyFn *)PetscViewerAndFormatDestroy);
             PCHKERRQ(ksp,ierr);
          }
       }
@@ -2543,7 +2541,7 @@ void PetscSolver::SetPrintLevel(int plev)
       if (plev > 0)
       {
          ierr = SNESMonitorSet(snes,(myMonitor)SNESMonitorDefault,vf,
-                               (myPetscFunc)PetscViewerAndFormatDestroy);
+                               (PetscCtxDestroyFn *)PetscViewerAndFormatDestroy);
          PCHKERRQ(snes,ierr);
       }
    }
